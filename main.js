@@ -116,27 +116,34 @@ var app = http.createServer(function (request, response) {
       `SELECT * FROM topic WHERE id=?`,
       [queryData.id],
       function (error, data) {
-        var uid = queryData.id;
-        var list = template.list(data);
-        var html = template.HTML(
-          data[0].title,
-          list,
-          `
+        connection.query(`SELECT * FROM author`, function (error, authors) {
+          var uid = queryData.id;
+          var list = template.list(data);
+          var html = template.HTML(
+            data[0].title,
+            list,
+            `
               <form action="/update_process" method="post">
                 <input type="hidden" name="id" value="${uid}">
-                <p><input type="text" name="title" placeholder="title" value="${data[0].title}"></p>
+                ${template.authorSelect(authors, data[0].author_id)}
+                <p><input type="text" name="title" placeholder="title" value="${
+                  data[0].title
+                }"></p>
                 <p>
-                  <textarea name="description" placeholder="description">${data[0].description}</textarea>
+                  <textarea name="description" placeholder="description">${
+                    data[0].description
+                  }</textarea>
                 </p>
                 <p>
                   <input type="submit">
                 </p>
               </form>
               `,
-          `<a href="/create">create</a> <a href="/update?id=${uid}">update</a>`
-        );
-        response.writeHead(200);
-        response.end(html);
+            `<a href="/create">create</a> <a href="/update?id=${uid}">update</a>`
+          );
+          response.writeHead(200);
+          response.end(html);
+        });
       }
     );
   } else if (pathname === '/update_process') {
