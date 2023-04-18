@@ -146,12 +146,14 @@ var app = http.createServer(function (request, response) {
       var id = post.id;
       var title = post.title;
       var description = post.description;
-      fs.rename(`data/${id}`, `data/${title}`, function (error) {
-        fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
-          response.writeHead(302, { Location: `/?id=${title}` });
+      connection.query(
+        `UPDATE topic SET title=?, description=? WHERE id=?`,
+        [title, description, id],
+        function (error, data) {
+          response.writeHead(302, { Location: `/?id=${id}` });
           response.end();
-        });
-      });
+        }
+      );
     });
   } else if (pathname === '/delete_process') {
     var body = '';
