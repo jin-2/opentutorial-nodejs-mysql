@@ -68,13 +68,15 @@ var app = http.createServer(function (request, response) {
     }
   } else if (pathname === '/create') {
     connection.query('SELECT * FROM topic', function (error, data) {
-      const title = 'WEB - create';
-      const list = template.list(data);
-      const html = template.HTML(
-        title,
-        list,
-        `
+      connection.query('SELECT * FROM author', function (error, authors) {
+        const title = 'WEB - create';
+        const list = template.list(data);
+        const html = template.HTML(
+          title,
+          list,
+          `
           <form action="/create_process" method="post">
+            ${template.authorSelect(authors)}
             <p><input type="text" name="title" placeholder="title"></p>
             <p>
               <textarea name="description" placeholder="description"></textarea>
@@ -84,10 +86,11 @@ var app = http.createServer(function (request, response) {
             </p>
           </form>
         `,
-        ''
-      );
-      response.writeHead(200);
-      response.end(html);
+          ''
+        );
+        response.writeHead(200);
+        response.end(html);
+      });
     });
   } else if (pathname === '/create_process') {
     let body = '';
@@ -95,12 +98,13 @@ var app = http.createServer(function (request, response) {
       body = body + data;
     });
     request.on('end', function () {
-      var post = qs.parse(body);
-      var title = post.title;
-      var description = post.description;
+      const post = qs.parse(body);
+      const title = post.title;
+      const description = post.description;
+      const author = post.author;
       connection.query(
         `INSERT INTO topic (title, description, created, author_id) VALUES (?, ?, NOW(), ?)`,
-        [title, description, 1],
+        [title, description, author],
         function (error, result) {
           response.writeHead(302, { Location: `/?id=${result.insertId}` });
           response.end();
