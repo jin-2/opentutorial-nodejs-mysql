@@ -1,10 +1,22 @@
-var http = require('http');
-var fs = require('fs');
-var url = require('url');
-var qs = require('querystring');
-var template = require('./lib/template.js');
-var path = require('path');
-var sanitizeHtml = require('sanitize-html');
+require('dotenv').config();
+
+const http = require('http');
+const fs = require('fs');
+const url = require('url');
+const qs = require('querystring');
+const template = require('./lib/template.js');
+const path = require('path');
+const sanitizeHtml = require('sanitize-html');
+const mysql = require('mysql');
+
+const connection = mysql.createConnection({
+  host: process.env.HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PW,
+  database: process.env.DB
+})
+
+connection.connect();
 
 var app = http.createServer(function(request,response){
     var _url = request.url;
