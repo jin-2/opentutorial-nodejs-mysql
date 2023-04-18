@@ -56,7 +56,7 @@ var app = http.createServer(function (request, response) {
             list,
             `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
             ` <a href="/create">create</a>
-                    <a href="/update?id=${sanitizedTitle}">update</a>
+                    <a href="/update?id=${queryData.id}">update</a>
                     <form action="delete_process" method="post">
                       <input type="hidden" name="id" value="${sanitizedTitle}">
                       <input type="submit" value="delete">
@@ -109,32 +109,33 @@ var app = http.createServer(function (request, response) {
       );
     });
   } else if (pathname === '/update') {
-    fs.readdir('./data', function (error, filelist) {
-      var filteredId = path.parse(queryData.id).base;
-      fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
-        var title = queryData.id;
-        var list = template.list(filelist);
+    connection.query(
+      `SELECT * FROM topic WHERE id=?`,
+      [queryData.id],
+      function (error, data) {
+        var uid = queryData.id;
+        var list = template.list(data);
         var html = template.HTML(
-          title,
+          data[0].title,
           list,
           `
-            <form action="/update_process" method="post">
-              <input type="hidden" name="id" value="${title}">
-              <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-              <p>
-                <textarea name="description" placeholder="description">${description}</textarea>
-              </p>
-              <p>
-                <input type="submit">
-              </p>
-            </form>
-            `,
-          `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+              <form action="/update_process" method="post">
+                <input type="hidden" name="id" value="${uid}">
+                <p><input type="text" name="title" placeholder="title" value="${data[0].title}"></p>
+                <p>
+                  <textarea name="description" placeholder="description">${data[0].description}</textarea>
+                </p>
+                <p>
+                  <input type="submit">
+                </p>
+              </form>
+              `,
+          `<a href="/create">create</a> <a href="/update?id=${uid}">update</a>`
         );
         response.writeHead(200);
         response.end(html);
-      });
-    });
+      }
+    );
   } else if (pathname === '/update_process') {
     var body = '';
     request.on('data', function (data) {
