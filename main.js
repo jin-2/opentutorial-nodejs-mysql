@@ -39,13 +39,12 @@ var app = http.createServer(function (request, response) {
       });
     } else {
       connection.query(
-        `SELECT * FROM topic WHERE id=?`,
+        `SELECT * FROM topic JOIN author ON topic.author_id = author.id WHERE topic.id=?`,
         [queryData.id],
         function (error, data) {
           if (error) {
             throw error;
           }
-          var title = queryData.id;
           var sanitizedTitle = sanitizeHtml(data[0].title);
           var sanitizedDescription = sanitizeHtml(data[0].description, {
             allowedTags: ['h1'],
@@ -54,7 +53,7 @@ var app = http.createServer(function (request, response) {
           var html = template.HTML(
             sanitizedTitle,
             list,
-            `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+            `<h2>${sanitizedTitle}</h2>${sanitizedDescription}<p>${data[0].name}</p>`,
             ` <a href="/create">create</a>
                     <a href="/update?id=${queryData.id}">update</a>
                     <form action="delete_process" method="post">
