@@ -39,8 +39,12 @@ var app = http.createServer(function (request, response) {
       });
     } else {
       connection.query(
-        `SELECT * FROM topic WHERE id=${queryData.id}`,
+        `SELECT * FROM topic WHERE id=?`,
+        [queryData.id],
         function (error, data) {
+          if (error) {
+            throw error;
+          }
           var title = queryData.id;
           var sanitizedTitle = sanitizeHtml(data[0].title);
           var sanitizedDescription = sanitizeHtml(data[0].description, {
