@@ -24,10 +24,10 @@ var app = http.createServer(function (request, response) {
   var pathname = url.parse(_url, true).pathname;
   if (pathname === '/') {
     if (queryData.id === undefined) {
-      fs.readdir('./data', function (error, filelist) {
+      connection.query('SELECT * FROM topic', function (error, data) {
         var title = 'Welcome';
         var description = 'Hello, Node.js';
-        var list = template.list(filelist);
+        var list = template.list(data);
         var html = template.HTML(
           title,
           list,
@@ -163,4 +163,7 @@ var app = http.createServer(function (request, response) {
     response.end('Not found');
   }
 });
+
+connection.end();
+
 app.listen(3000);
